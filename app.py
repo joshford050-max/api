@@ -1,32 +1,28 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # নতুন যোগ করা হয়েছে
 from ollamafreeapi import OllamaFreeAPI
 import time
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app)  # এটি ব্রাউজার থেকে কানেক্ট করার অনুমতি দেবে
+
 client = OllamaFreeAPI()
 
 @app.route('/')
 def home():
-    return "Ollama Free API Bridge is running!"
+    return "API is running!"
 
-@app.route('/health')
-def health():
-    return jsonify({"status": "ok", "timestamp": int(time.time())})
-
-@app.route('/v1/chat/completions', methods=['POST'])
+@app.route('/v1/chat/completions', methods=['POST', 'OPTIONS'])
 def chat():
-    data = request.json
-    if not data:
-        return jsonify({"error": "No JSON body provided"}), 400
+    # ব্রাউজার অনেক সময় প্রথমে OPTIONS রিকোয়েস্ট পাঠায়, সেটি হ্যান্ডেল করা
+    if request.method == 'OPTIONS':
+        return '', 204
 
+    data = request.json
     messages = data.get('messages', [])
     model = data.get('model', 'llama3.2:3b')
 
-    prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages if 'role' in m and 'content' in m])
+    prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
 
     try:
         response_text = client.chat(model=model, prompt=prompt)
