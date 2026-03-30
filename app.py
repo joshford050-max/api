@@ -3,6 +3,7 @@ from ollamafreeapi import OllamaFreeAPI
 import time
 import logging
 
+# লগিং সেটআপ
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,6 @@ def health():
 def chat():
     data = request.json
 
-    # Input validation
     if not data:
         return jsonify({"error": "No JSON body provided"}), 400
 
@@ -31,7 +31,7 @@ def chat():
 
     model = data.get('model', 'llama3.2:3b')
 
-    # পুরো conversation history একসাথে পাঠান
+    # চ্যাট হিস্ট্রি ফরম্যাট করা
     prompt = "\n".join([
         f"{m['role']}: {m['content']}"
         for m in messages
